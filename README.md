@@ -2,7 +2,7 @@
 
 ## Overview
 
-express-cloudflare is an Express.js middleware that validates and manages requests originating from Cloudflare's proxy services. It provides IP validation, automatic updates of Cloudflare IP ranges, and request IP management.
+🛡️ Make your Express.js app securely work with Cloudflare! This middleware ensures only real Cloudflare IPs can access your app, handles user IPs correctly, and stays up-to-date with Cloudflare's network.
 
 ## Features
 
@@ -16,20 +16,20 @@ express-cloudflare is an Express.js middleware that validates and manages reques
 ## Installation
 
 ```bash
-npm install -d express-cloudflare
+npm install express-cloudflare-middleware
 ```
 
 ## Basic Usage
 
 ```javascript
 import express from 'express'
-import ExpressCloudflareMiddleware from 'express-cloudflare'
+import ExpressCloudflareMiddleware from 'express-cloudflare-middleware'
 
 const app = express()
 
-const middleware = new ExpressCloudflareMiddleware()
+const cloudflare = new ExpressCloudflareMiddleware()
 
-app.use(middleware.middleware())
+app.use(cloudflare.middleware())
 ```
 
 ## Configuration Options
@@ -69,7 +69,11 @@ const middleware = new ExpressCloudflareMiddleware({
     res.status(403).json({ error: 'Invalid IP origin' })
   },
   updateClientIP: false,
-  strict: false
+  strict: false,
+  paths: {
+    v4: './custom/path/ips-v4.txt',
+    v6: './custom/path/ips-v6.txt'
+  }
 })
 ```
 
@@ -88,6 +92,17 @@ The middleware modifies the Express request object with the following properties
 3. In strict mode:
     - Request is validated against known Cloudflare IP ranges
     - Non-Cloudflare IPs are rejected with 403 status
+
+## IP Manager Configuration
+
+The middleware uses an internal `CloudflareIPManager` class that can be configured using the `ipManagerOptions` parameter. If not provided, it will use the main middleware options for configuration.
+
+### IP Manager Features
+- Initial loading of IP ranges from local files on instantiation
+- Initial loading of IP ranges from URLs on instantiation
+- Periodic updates from Cloudflare URLs when updates are enabled
+- Error handling for failed loads and updates
+- Support for both IPv4 and IPv6 ranges
 
 ## Runtime Control
 
@@ -127,15 +142,7 @@ IP range files should contain one CIDR range per line:
 
 ## Best Practices
 
-1. Enable trust proxy in Express when behind Cloudflare:
-   ```javascript
-   app.set('trust proxy', true)
-   ```
-
-> When running behind a proxy, the `updateClientIP` option should be set to `false`. This is important because the proxy adds Cloudflare's IP address to the X-Forwarded-For header, and you don't want to override the IP resolution behavior in this case.
-> For more information about how Cloudflare handles request headers, see: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#x-forwarded-for
-
-2. Implement custom error handling for production:
+1. Implement custom error handling for production:
 
    ```javascript
    const middleware = new ExpressCloudflareMiddleware({
@@ -148,7 +155,14 @@ IP range files should contain one CIDR range per line:
 
 > It is recommended not to expose detailed error information in production.
 
-3. When using your own proxy server (such as Nginx, Caddy, or other web servers), it is recommended to handle Cloudflare IP validation at the proxy level rather than using this middleware. Most proxy servers already have built-in solutions for this purpose.
+2. When using your own proxy server (such as Nginx, Caddy, or other web servers), it is recommended to handle Cloudflare IP validation at the proxy level rather than using this middleware. Most proxy servers already have built-in solutions for this purpose.
+
+## Notes
+
+- The middleware uses ES modules (`import`/`export`)
+- All file paths are resolved relative to the middleware's location
+- Default IP range files are stored in the `data` directory within the package
+- The middleware requires `fetch` API support
 
 ## License
 
