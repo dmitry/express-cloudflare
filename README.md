@@ -49,14 +49,14 @@ The middleware accepts the following configuration options:
 
 ```javascript
 {
-  paths: {
-    v4: './data/ips-v4.txt',
-    v6: './data/ips-v6.txt'
-  },
-  urls: {
-    v4: 'https://www.cloudflare.com/ips-v4',
-    v6: 'https://www.cloudflare.com/ips-v6'
-  }
+   paths: {
+      v4: './data/ips-v4.txt',
+              v6: './data/ips-v6.txt'
+   },
+   urls: {
+      v4: 'https://www.cloudflare.com/ips-v4',
+              v6: 'https://www.cloudflare.com/ips-v6'
+   }
 }
 ```
 
@@ -64,16 +64,16 @@ The middleware accepts the following configuration options:
 
 ```javascript
 const middleware = new ExpressCloudflareMiddleware({
-  updateInterval: 3600000,
-  errorHandler: (req, res) => {
-    res.status(403).json({ error: 'Invalid IP origin' })
-  },
-  updateClientIP: false,
-  strict: false,
-  paths: {
-    v4: './custom/path/ips-v4.txt',
-    v6: './custom/path/ips-v6.txt'
-  }
+   updateInterval: 3600000,
+   errorHandler: (req, res) => {
+      res.status(403).json({ error: 'Invalid IP origin' })
+   },
+   updateClientIP: false,
+   strict: false,
+   paths: {
+      v4: './custom/path/ips-v4.txt',
+      v6: './custom/path/ips-v6.txt'
+   }
 })
 ```
 
@@ -88,10 +88,10 @@ The middleware modifies the Express request object with the following properties
 
 1. Original IP is stored in `req.cloudflareIP`
 2. If `updateClientIP` is true and `cf-connecting-ip` header is present:
-    - `req.ip` getter is modified to return the Cloudflare IP
+   - `req.ip` getter is modified to return the Cloudflare IP
 3. In strict mode:
-    - Request is validated against known Cloudflare IP ranges
-    - Non-Cloudflare IPs are rejected with 403 status
+   - Request is validated against known Cloudflare IP ranges
+   - Non-Cloudflare IPs are rejected with 403 status
 
 ## IP Manager Configuration
 
