@@ -1,7 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import ipRangeCheck from 'ip-range-check'
-import { fileURLToPath } from 'url'
+const fs = require('fs')
+const path = require('path')
+const ipRangeCheck = require('ip-range-check')
 
 class CloudflareIPManager {
   ipRanges = { v4: [], v6: [] }
@@ -91,9 +90,9 @@ class CloudflareIPManager {
   }
 }
 
-export default class ExpressCloudflareMiddleware {
+class ExpressCloudflareMiddleware {
   constructor(options = {}) {
-    const defaultPath = path.dirname(fileURLToPath(import.meta.url)) + '/data'
+    const defaultPath = path.join(__dirname, '/data')
     const defaultOptions = {
       updateInterval: 3600000,
       strict: true,
@@ -141,7 +140,7 @@ export default class ExpressCloudflareMiddleware {
       const cfConnectingIP = req.headers['cf-connecting-ip']
       if (this.options.updateClientIP && cfConnectingIP) {
         Object.defineProperty(req, 'ip', {
-          get: function() {
+          get: function () {
             return cfConnectingIP || req.ip
           },
           configurable: true
@@ -156,3 +155,5 @@ export default class ExpressCloudflareMiddleware {
     }
   }
 }
+
+module.exports = ExpressCloudflareMiddleware
