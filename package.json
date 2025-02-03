@@ -1,9 +1,9 @@
 {
   "name": "express-cloudflare-middleware",
   "version": "1.0.2",
-  "type": "module",
+  "type": "commonjs",
   "description": "Express middleware to validate Cloudflare IP addresses",
-  "main": "index.mjs",
+  "main": "index.js",
   "homepage": "https://github.com/dmitry/express-cloudflare-middleware",
   "repository": {
     "type": "git",
