@@ -42,6 +42,7 @@ class CloudflareIPManager {
   }
 
   async loadFromUrls() {
+    console.debug('[CloudflareIPManager] Fetching IP ranges from URLs...')
     const ranges = await Promise.all(
       Object.entries(this.options.urls).map(async ([version, url]) => ({
         version,
@@ -54,6 +55,8 @@ class CloudflareIPManager {
         this.ipRanges[version] = ranges
       }
     })
+
+    console.debug('[CloudflareIPManager] IP ranges updated:', this.ipRanges)
   }
 
   async _fetchRanges(url) {
@@ -137,17 +140,30 @@ class ExpressCloudflareMiddleware {
     return (req, res, next) => {
       req.cloudflareIP = req.ip
 
-      const cfConnectingIP = req.headers['cf-connecting-ip']
-      if (this.options.updateClientIP && cfConnectingIP) {
+      const cfConnectingIp = req.headers['cf-connecting-ip']
+      if (this.options.updateClientIP && cfConnectingIp) {
         Object.defineProperty(req, 'ip', {
           get: function () {
-            return cfConnectingIP || req.ip
+            const newIp = cfConnectingIp || req.ip
+            console.debug('[ExpressCloudflareMiddleware] Updated IP to', newIp)
+            return newIp
           },
           configurable: true
         })
       }
 
-      if (this.options.strict && !this.ipManager.isCloudflareIP(req.cloudflareIP)) {
+      const requestIsCloudflareIp = this.ipManager.isCloudflareIP(req.cloudflareIP)
+      console.debug('[ExpressCloudflareMiddleware]', {
+        url: req.url,
+        xForwardedFor:req.headers['x-forwarded-for'],
+        remoteAddress: req.socket.remoteAddress,
+        originalIp: req.cloudflareIP,
+        newIp: req.ip,
+        cfConnectingIp,
+        requestIsCloudflareIp,
+      })
+
+      if (this.options.strict && !requestIsCloudflareIp) {
         return this.options.errorHandler(req, res)
       }
 
